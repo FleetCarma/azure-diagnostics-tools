@@ -47,7 +47,7 @@ class LogStash::Inputs::AzureWADTable < LogStash::Inputs::Base
     while !stop?
       @logger.debug("Starting process method @" + Time.now.to_s);
       process(output_queue)
-      @logger.debug("Starting delay of: " + @idle_delay.to_s + " seconds @" + Time.now.to_s);
+      @logger.debug("Starting delay of: " + @idle_delay_seconds.to_s + " seconds @" + Time.now.to_s);
       sleep @idle_delay
     end # while
   end # run
@@ -58,10 +58,8 @@ class LogStash::Inputs::AzureWADTable < LogStash::Inputs::Base
 
   def build_latent_query
     @logger.debug("from #{@last_timestamp} to #{@until_timestamp}")
-    query_filter = "(PartitionKey gt '#{partitionkey_from_datetime(@last_timestamp)}' and PartitionKey lt '#{partitionkey_from_datetime(@until_timestamp)}')"
-    for i in 0..99
-      query_filter << " or (PartitionKey gt '#{i.to_s.rjust(19, '0')}___#{partitionkey_from_datetime(@last_timestamp)}' and PartitionKey lt '#{i.to_s.rjust(19, '0')}___#{partitionkey_from_datetime(@until_timestamp)}')"
-    end # for block
+    query_filter = "(PartitionKey gt '#{partitionkey_from_datetime(@last_timestamp)}' and PartitionKey lt '#{partitionkey_from_datetim
+e(@until_timestamp)}')"
     query_filter = query_filter.gsub('"','')
     query_filter
   end
@@ -71,7 +69,8 @@ class LogStash::Inputs::AzureWADTable < LogStash::Inputs::Base
     # query data using start_from_time
     query_filter = "(PartitionKey gt '#{partitionkey_from_datetime(@last_timestamp)}')"
     for i in 0..99
-      query_filter << " or (PartitionKey gt '#{i.to_s.rjust(19, '0')}___#{partitionkey_from_datetime(@last_timestamp)}' and PartitionKey lt '#{i.to_s.rjust(19, '0')}___9999999999999999999')"
+      query_filter << " or (PartitionKey gt '#{i.to_s.rjust(19, '0')}___#{partitionkey_from_datetime(@last_timestamp)}' and PartitionK
+ey lt '#{i.to_s.rjust(19, '0')}___9999999999999999999')"
     end # for block
     query_filter = query_filter.gsub('"','')
     query_filter
